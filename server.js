@@ -1,6 +1,7 @@
 // Importation des modules externes
 const express = require("express"); // Module JS permettant de créer des endpoints HTTP facilement
 const bodyParser = require("body-parser"); // Module JS permettant de tranformer les paramètres en JSON
+const auth = require("./auth");
 
 /*
   Paramètrage d'Express. Pas besoin de toucher.
@@ -23,6 +24,7 @@ app.use(function(req, res, next) {
   );
   next();
 });
+app.use(auth);
 /*
   ------------------------------------------------
 */
@@ -65,7 +67,7 @@ const data = {
 app.get("/", (req, res) => {
   const paramsGet = req.query; // {index: "5"}
   console.log({ paramsGet });
-  const text = `L'item a renvoyer est : ${data.items[paramsGet.index]}\n`;
+  const text = data.items[paramsGet.index]; // Correction des données qui vont être renvoyées à l'utilisateur.
   res.send(text); // On répond à la requête avec un texte
 });
 
@@ -74,8 +76,8 @@ app.get("/", (req, res) => {
 // TODO: Sauvegarder l'item reçu dans le tableau des items
 app.post("/", (req, res) => {
   const paramsPost = req.body; // {title: "Mon titre"}
-  console.log({ paramsPost });
-  res.json(paramsPost);
+  console.log(paramsPost.title); // En ajoutant un titre, on crée un item qui sera ajouté au tableau.
+  res.json(data.items.push(paramsPost));
 });
 
 // Lorsqu'on reçoit une requête DELETE
@@ -83,7 +85,8 @@ app.post("/", (req, res) => {
 // TODO: Supprimer l'item correspondant à l'index envoyé en paramètre d'URL
 app.delete("/:number", (req, res) => {
   const paramsURL = req.params; //  {number: "6"}
-  console.log({ paramsURL });
+  console.log(paramsURL.number);
+  data.items = data.items.filter((item, index) => index !==parseInt(paramsURL.number)) // Récupération de la commande qui permet de supprimer un item.
   res.json(paramsURL);
 });
 
@@ -93,7 +96,9 @@ app.delete("/:number", (req, res) => {
 app.put("/", (req, res) => {
   const paramsGet = req.query; // {index: 2}
   const paramsPost = req.body; // {newTitle: "Mon nouveau titre"}
+  data.items[paramsGet.index].title = paramsPost.newTitle; // Récupération du titre et remplacement de l'ancien
   console.log({ paramsPost });
+  console.log(data.items); 
   res.json(paramsPost);
 });
 
